@@ -1,64 +1,52 @@
-project(rgbd_vio) # RGBD-VINS 
+cmake_minimum_required(VERSION 3.5)
+project(rgbd_vio)
 
-cmake_minimum_required(VERSION 2.8.3)
+# 编译选项
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_BUILD_TYPE "RelWithDebInfo")
+add_compile_options(-Wall -g -O3 -fpermissive)
 
-# SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -std=c++11 -w -g -O3 -fpermissive -mno-avx -mno-avx2")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -w -g -O3 -fpermissive")
-SET(CMAKE_BUILD_TYPE "RelWithDebInfo")
-
-if(COMMAND cmake_policy)
-    cmake_policy(SET CMP0003 NEW)
-endif(COMMAND cmake_policy)
-
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
-
-# rosbuild_init()
-
-#set the default path for built executables to the "bin" directory
+# 输出目录
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
-# set(OpenCV_DIR "/home/davidz/work/3rdlibs/OpenCV-2.4.10/build")
+# 查找依赖
+find_package(ament_cmake REQUIRED)
 find_package(OpenCV REQUIRED)
-# message("OpenCV_INCLUDE_DIR: ${OpenCV_INCLUDE_DIRS}")
-# include_directories("/home/hzhang8/work/3rdlib/opencv-3.3.1/install/include")
-
-find_package(catkin REQUIRED COMPONENTS
-    roscpp
-    cv_bridge
-    sensor_msgs
-    std_msgs
-    pcl_conversions
-    pcl_ros
-    message_filters
-    image_transport
-    camera_model # this package in VINS-Mono or VINS-Fusion 
-    tf
-)
-
-catkin_package(
-    # DEPENDS Eigen
-    # CATKIN_DEPENDS roscpp std_msgs sensor_msgs cv_bridge
-    # INCLUDE_DIRS include
-    # LIBRARIES
-)
-
-SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-find_package(Eigen3 QUIET)
-include_directories(${EIGEN3_INCLUDE_DIR} "/usr/include/eigen3")
-include_directories("${PROJECT_SOURCE_DIR}/include")
-include_directories(${catkin_INCLUDE_DIRS})
-
+find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED)
-include_directories(${CERES_INCLUDE_DIRS})
 
-## work on the rgbd inertial odometry 
+find_package(rclcpp REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(pcl_conversions REQUIRED)
+find_package(pcl_ros REQUIRED)
+find_package(message_filters REQUIRED)
+find_package(image_transport REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
+# camera_model 可能需要替换为对应 ROS2 包名，如果没有可用，需自行实现或调整
+
+# include 头文件路径
+include_directories(
+  ${OpenCV_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS}
+  ${CERES_INCLUDE_DIRS}
+  ${PROJECT_SOURCE_DIR}/include
+)
+
+# 子目录
 add_subdirectory(rvio)
 
+# 导出依赖
+ament_export_dependencies(OpenCV Eigen3 Ceres)
+ament_export_include_directories(
+  ${OpenCV_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS}
+  ${CERES_INCLUDE_DIRS}
+  ${PROJECT_SOURCE_DIR}/include
+)
+
+ament_package()

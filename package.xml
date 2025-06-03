@@ -1,28 +1,47 @@
 <?xml version="1.0"?>
-<package>
-    <name>rgbd_vio</name>
-    <version>0.1.0</version>
-    <description>
-        Reimplement of RGBD-camera-based Visual Inertial Odometry
-    </description>
-    <author>He Zhang</author>
-    <maintainer email="xxx@xx.edu">XXX</maintainer>
-    <license>LGPL</license>
+<package format="3">
+  <name>rgbd_vio</name>
+  <version>0.0.1</version>
+  <description>A RGBD camera-based visual inertial odometry</description>
+  <maintainer email="your_email@domain.com">Your Name</maintainer>
+  <license>BSD</license>
 
-    <buildtool_depend>catkin</buildtool_depend>
-    <build_depend>pcl_conversions</build_depend> 
-    <build_depend>tf</build_depend>
-    <run_depend>pcl_conversions</run_depend>
-    <run_depend>tf</run_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
-    <build_depend>cv_bridge</build_depend>
-    <run_depend>cv_bridge</run_depend>
+  <!-- 构建依赖 -->
+  <build_depend>rclcpp</build_depend>
+  <build_depend>cv_bridge</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>pcl_conversions</build_depend>
+  <build_depend>pcl_ros</build_depend>
+  <build_depend>message_filters</build_depend>
+  <build_depend>image_transport</build_depend>
+  <build_depend>tf2</build_depend>
+  <build_depend>tf2_ros</build_depend>
+  <!-- camera_model 在 ROS2 中可能没有标准包，请根据实际情况调整或移除 -->
 
-    <build_depend>sensor_msgs</build_depend>
-    <run_depend>sensor_msgs</run_depend>
+  <!-- 运行依赖 -->
+  <exec_depend>rclcpp</exec_depend>
+  <exec_depend>cv_bridge</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>pcl_conversions</exec_depend>
+  <exec_depend>pcl_ros</exec_depend>
+  <exec_depend>message_filters</exec_depend>
+  <exec_depend>image_transport</exec_depend>
+  <exec_depend>tf2</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <!-- camera_model 同上 -->
 
-    <build_depend>image_transport</build_depend>
-    <run_depend>image_transport</run_depend>
+  <build_depend>Eigen3</build_depend>
+  <exec_depend>Eigen3</exec_depend>
+  <build_depend>OpenCV</build_depend>
+  <exec_depend>OpenCV</exec_depend>
+  <build_depend>ceres-solver</build_depend>
+  <exec_depend>ceres-solver</exec_depend>
 
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>
-    
