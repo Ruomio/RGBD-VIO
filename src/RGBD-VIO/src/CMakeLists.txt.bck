@@ -1,0 +1,131 @@
+cmake_minimum_required(VERSION 3.5)
+project(rvio)
+
+# 查找依赖项
+find_package(ament_cmake REQUIRED)
+find_package(OpenCV REQUIRED)
+find_package(Ceres REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(cv_bridge REQUIRED)
+
+# 设置 C++ 标准
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# 添加包含路径
+# file(GLOB HEADER_DIRS "/opt/ros/jazzy/include/*")
+include_directories(${PROJECT_SOURCE_DIR}/initial ${PROJECT_SOURCE_DIR}/utility /opt/ros/jazzy/include/* usr/include)
+
+# 添加库目标
+add_library(${PROJECT_NAME} SHARED
+    parameters.cpp
+    marginalization_factor.cpp
+    projection_quat.cpp
+    rvio.cpp
+    rvio_init.cpp
+    rvio_plane.cpp
+    rvio_dvio.cpp
+    depth_factor.cpp
+    plane_correct_pose.cpp
+    visualization.cpp
+    feature_manager.cpp
+    initial/gmm_model.cpp
+    initial/initial_alignment.cpp
+    initial/initial_sfm.cpp
+    initial/solve_5pts.cpp
+    initial/initial_ex_rotation.cpp
+    initial/translate_factor.cpp
+    initial/solve_opt.cpp
+    utility/utility.cpp
+)
+
+# 链接依赖库
+ament_target_dependencies(${PROJECT_NAME}
+    rclcpp
+    sensor_msgs
+    cv_bridge
+)
+
+target_link_libraries(${PROJECT_NAME}
+    ${CERES_LIBRARIES}
+    ${OpenCV_LIBS}
+)
+
+# 添加可执行文件
+add_executable(${PROJECT_NAME}_node rvio_syn_node.cpp)
+
+ament_target_dependencies(${PROJECT_NAME}_node
+	rclcpp
+	sensor_msgs
+	cv_bridge
+)
+target_link_libraries(${PROJECT_NAME}_node
+    ${PROJECT_NAME}
+    ${CERES_LIBRARIES}
+    ${OpenCV_LIBS}
+)
+
+add_executable(run_dvio_node run_dvio_node.cpp)
+ament_target_dependencies(run_dvio_node
+	rclcpp
+	sensor_msgs
+	cv_bridge
+)
+target_link_libraries(run_dvio_node
+    ${PROJECT_NAME}
+    ${CERES_LIBRARIES}
+    ${OpenCV_LIBS}
+)
+
+# 取消注释后启用
+# add_executable(dvio_init_node dvio_init_node.cpp)
+# target_link_libraries(dvio_init_node
+#     ${PROJECT_NAME}
+#     ${CERES_LIBRARIES}
+#     ${OpenCV_LIBS}
+#     rclcpp::rclcpp
+#     sensor_msgs::sensor_msgs
+#     cv_bridge::cv_bridge
+# )
+
+add_executable(feature_tracker_${PROJECT_NAME}
+    feature_tracker/feature_tracker.cpp
+    feature_tracker/feature_tracker_node.cpp
+    parameters.cpp
+)
+
+ament_target_dependencies(feature_tracker_${PROJECT_NAME}
+	rclcpp
+	sensor_msgs
+	cv_bridge
+)
+target_link_libraries(feature_tracker_${PROJECT_NAME}
+    ${CERES_LIBRARIES}
+    ${OpenCV_LIBS}
+)
+
+# 取消注释后启用
+# add_executable(show_feat_result feature_tracker/show_feat_result.cpp)
+# target_link_libraries(show_feat_result
+#     ${OpenCV_LIBS}
+#     rclcpp::rclcpp
+#     sensor_msgs::sensor_msgs
+# )
+
+# 安装配置（可选）
+install(TARGETS
+    ${PROJECT_NAME}
+    ${PROJECT_NAME}_node
+    run_dvio_node
+    feature_tracker_${PROJECT_NAME}
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+# 安装头文件（可选）
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION include/${PROJECT_NAME}
+)
+
+# 声明 ament 依赖项
+ament_package()

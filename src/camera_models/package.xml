@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>camera_models</name>
+  <version>0.0.0</version>
+  <description>The camera_models package</description>
+
+  <!-- Maintainer information -->
+  <maintainer email="dvorak@todo.todo">dvorak</maintainer>
+
+  <!-- License information -->
+  <license>TODO</license>
+
+  <!-- Dependencies -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- Required dependencies -->
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>Boost</depend>
+  <depend>OpenCV</depend>
+  <depend>Ceres</depend>
+
+  <!-- Export dependencies -->
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
