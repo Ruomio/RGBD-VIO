@@ -101,8 +101,8 @@ target_link_libraries(camera_models PUBLIC
 install(TARGETS
     camera_models
     EXPORT ${PROJECT_NAME}_export
-    ARCHIVE DESTINATION lib/${PROJECT_NAME}
-    LIBRARY DESTINATION lib/${PROJECT_NAME}
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
     RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 # install(TARGETS
@@ -146,7 +146,7 @@ ament_export_targets(
 )
 
 ament_export_include_directories(
-    install
+    include
 )
 
 ament_package()

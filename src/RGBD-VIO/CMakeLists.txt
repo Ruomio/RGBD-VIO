@@ -7,7 +7,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # set(CMAKE_BUILD_TYPE "RelWithDebInfo")
 # set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_BUILD_TYPE "Debug")
-set(CMAKE_BUILD_PARALLEL_LEVEL 4)
+# set(CMAKE_BUILD_PARALLEL_LEVEL 4)
+add_compile_options(-g -O2 -fpermissive)
 # add_compile_options(-Wall -g -O3 -fpermissive)
 
 # 输出目录
@@ -33,6 +34,7 @@ find_package(message_filters REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 find_package(camera_models REQUIRED)
 
 
@@ -68,6 +70,7 @@ ament_target_dependencies(${PROJECT_NAME}
     pcl_ros
     pcl_conversions
     visualization_msgs
+    ament_index_cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -95,6 +98,7 @@ ament_target_dependencies(${PROJECT_NAME}_node
     rclcpp
     sensor_msgs
     cv_bridge
+    ament_index_cpp
 )
 target_link_libraries(${PROJECT_NAME}_node
     ${PROJECT_NAME}
@@ -125,6 +129,7 @@ ament_target_dependencies(run_dvio_node
     pcl_ros
     pcl_conversions
     visualization_msgs
+    ament_index_cpp
 )
 target_link_libraries(run_dvio_node
     ${PROJECT_NAME}
@@ -168,6 +173,7 @@ ament_target_dependencies(feature_tracker_${PROJECT_NAME}
     message_filters
     pcl_conversions
     camera_models
+    ament_index_cpp
 )
 target_link_libraries(feature_tracker_${PROJECT_NAME}
     ${CERES_LIBRARIES}
@@ -204,9 +210,9 @@ install(TARGETS
     ${PROJECT_NAME}
     run_dvio_node
     ${PROJECT_NAME}_node
-    # feature_tracker_${PROJECT_NAME}
-    LIBRARY DESTINATION lib/${PROJECT_NAME}
-    ARCHIVE DESTINATION lib/${PROJECT_NAME}
+    feature_tracker_${PROJECT_NAME}
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
     RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -6,6 +6,7 @@
 */
 
 #include <rclcpp/logger.hpp>
+#include <sensor_msgs/image_encodings.hpp>
 #include <stdio.h>
 #include <queue>
 #include <map>
@@ -242,8 +243,8 @@ void process()
                 int camera_id = v % NUM_OF_CAM;
                 double x = cloud[i].x;
                 double y = cloud[i].y;
-                // double z = img_msg->points[i].z;
-                double z = 0.; // img_msg->points[i].z;
+                double z = cloud[i].z;
+                // double z = 0.; // img_msg->points[i].z;
                 double p_u = cloud[i].pu;
                 double p_v = cloud[i].pv;
                 double velocity_x = cloud[i].vx;
@@ -262,6 +263,8 @@ void process()
             m_dpt_buf.lock();
             sensor_msgs::msg::Image::ConstSharedPtr dpt_ptr = getDptImage(rclcpp::Time(img_msg->header.stamp).seconds());
             m_dpt_buf.unlock();
+
+            // RCLCPP_INFO(rclcpp::get_logger("rvio_syn_node"), "encoding: %s, Image dimensions: %d x %d", dpt_ptr->encoding.c_str(), dpt_ptr->height, dpt_ptr->width);
 
             bool b_get_floor = false;
 
@@ -293,7 +296,33 @@ void process()
                     // if(rvio.solver_flag != INITIAL)
                     //    b_get_floor = rvio.getFloorAndObstacle(ptr->image);
                     // rvio.associateDepthGMM(image, ptr->image);
-                }else{
+                }
+                else if(dpt_ptr->encoding == "32FC1") {
+                    sensor_msgs::msg::Image img;
+                    img.header = dpt_ptr->header;
+                    img.height = dpt_ptr->height;
+                    img.width = dpt_ptr->width;
+                    img.is_bigendian = dpt_ptr->is_bigendian;
+                    img.step = dpt_ptr->step;
+                    img.data = dpt_ptr->data;
+                    img.encoding = "32FC1";
+
+                    if(PUB_DEPTH_IMAGE){
+                        // pub_depth_img.publish(img);
+                        if(rvio.solver_flag == SolverFlag::NON_LINEAR){ // only publish depth after initialization{
+                            pub_depth_img->publish(*dpt_ptr);
+                            // RCLCPP_WARN("rvio_syn_node: publish keyframe_depth_image at %lf", dpt_ptr->header.stamp.toSec());
+                        }
+                    }
+
+                    // ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::MONO16);
+                    cv_bridge::CvImageConstPtr ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::TYPE_32FC1);
+                    if(DEPTH_INTERPOLATE)
+                        rvio.associateDepthInterporlate(image, ptr->image);
+                    else
+                        rvio.associateDepthSimple(image, ptr->image);
+                }
+                else{
                     cv_bridge::CvImageConstPtr ptr = cv_bridge::toCvCopy(dpt_ptr, sensor_msgs::image_encodings::MONO16);
                     if(DEPTH_INTERPOLATE)
                         rvio.associateDepthInterporlate(image, ptr->image);

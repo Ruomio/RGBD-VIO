@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <rclcpp/logger.hpp>
 #include <rclcpp/utilities.hpp>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 
 double INIT_DEPTH;
 double MIN_PARALLAX;
@@ -78,7 +79,8 @@ void readParameters(std::shared_ptr<rclcpp::Node> &n)
 {
     static bool once = false;
     if(once ) return;
-    std::string config_file("/home/davidz/work/ros/kinetic/src/demo_rgbd_new/config/downsample.yaml");
+    std::string pkg_path = ament_index_cpp::get_package_share_directory("rgbd_vio");
+    std::string config_file = ( pkg_path + "/config/downsample.yaml");
     // config_file = readParam<std::string>(n, "config_file");
     n->declare_parameter<std::string>("config_file", config_file);
     n->get_parameter("config_file", config_file);
@@ -112,7 +114,7 @@ void readParameters(std::shared_ptr<rclcpp::Node> &n)
     MIN_PARALLAX = MIN_PARALLAX / FOCAL_LENGTH;
 
     fsSettings["output_path"] >> VINS_RESULT_PATH;
-    // VINS_RESULT_PATH = VINS_FOLDER_PATH + VINS_RESULT_PATH;
+    VINS_RESULT_PATH = pkg_path + VINS_RESULT_PATH;
     // create folder if not exists
     Utility::FileSystemHelper::createDirectoryIfNotExists(VINS_RESULT_PATH.c_str());
     VINS_CORRECT_RESULT_PATH = VINS_RESULT_PATH + "/" + OUTPUT_COR_FILE_NAME;

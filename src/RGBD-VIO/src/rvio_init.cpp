@@ -39,10 +39,13 @@ bool RVIO::initialStructure()
         }
         var = sqrt(var / ((int)all_image_frame.size() - 1));
         //RCLCPP_WARN("IMU variation %f!", var);
-        if(var < 0.25)
+        if(var < 0.0002)
         {
-            RCLCPP_INFO(rclcpp::get_logger("rvio_init"), "IMU excitation not enough!");
+            RCLCPP_INFO(rclcpp::get_logger("rvio_init"), "IMU excitation not enough!,all_image_frame.size = %lu, var: %lf\n",all_image_frame.size() , var);
             //return false;
+        }
+        else {
+            RCLCPP_INFO(rclcpp::get_logger("rvio_init"), "IMU excitation not enough!,all_image_frame.size = %lu, var: %lf\n",all_image_frame.size() , var);
         }
     }
     // global sfm
@@ -81,10 +84,12 @@ bool RVIO::initialStructure()
               relative_R, relative_T,
               sfm_f, sfm_tracked_points))
     {
-        RCLCPP_DEBUG(rclcpp::get_logger("rvio_init"), "global SFM failed!");
+        RCLCPP_INFO(rclcpp::get_logger("rvio_init"), "global SFM failed!");
         marginalization_flag = MARGIN_OLD;
         return false;
     }
+
+    RCLCPP_INFO(rclcpp::get_logger("rvio_init"), "finish check imu and feature. %s, %d", __FILE__, __LINE__);
 
     //solve pnp for all frame
     map<double, ImageFrame>::iterator frame_it;
@@ -427,7 +432,8 @@ bool RVIO::relativePoseHybrid(Matrix3d &relative_R, Vector3d &relative_T, int &l
     {
         vector<pair<Vector3d, Vector3d>> corres;
         corres = f_manager.getCorrespondingWithDepth(i, WINDOW_SIZE);
-        if (corres.size() > 20)
+        // RCLCPP_INFO(rclcpp::get_logger("rvio_init"), "corres %lu", corres.size());
+        if (corres.size() >= 15)
         {
             double sum_parallax = 0;
             double average_parallax;
@@ -440,6 +446,7 @@ bool RVIO::relativePoseHybrid(Matrix3d &relative_R, Vector3d &relative_T, int &l
 
             }
             average_parallax = 1.0 * sum_parallax / int(corres.size());
+            RCLCPP_INFO(rclcpp::get_logger("rvio_init"), "average_parallax * 460: %lf, flag: %d", average_parallax*460, motion_estimator.solveRelativeHybrid(corres, relative_R, relative_T));
             if(average_parallax * 460 > 30 && motion_estimator.solveRelativeHybrid(corres, relative_R, relative_T))
             {
                 l = i;

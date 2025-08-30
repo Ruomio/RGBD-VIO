@@ -197,16 +197,23 @@ vector<pair<Vector3d, Vector3d>> getInliersWithValidDepth(const vector<pair<Vect
 {
     assert(mask.rows == corres.size());
 
+    int cnt1=0, cnt2=0;
+
     vector<pair<Vector3d, Vector3d>> ret;
     for(int i=0; i<corres.size(); i++){
 
-        if(mask.at<unsigned char>(i,0) == 0) continue;
-
-        if(corres[i].first.z() <= 0.1 )
+        if(mask.at<unsigned char>(i,0) == 0) {
+            cnt1++;
+            continue;
+        }
+        if(corres[i].first.z() <= 0.1 ) {
+            cnt2++;
             continue; // invalid depth pair
+        }
 
         ret.push_back(make_pair(corres[i].first, corres[i].second));
     }
+    RCLCPP_INFO(rclcpp::get_logger("solve_5pts"), "depth cnt1:%d, cnt2:%d\n", cnt1, cnt2);
     return ret;
 }
 
@@ -214,19 +221,27 @@ vector<pair<Vector3d, Vector3d>> getInliersWithValidDepthCov(const vector<pair<V
 {
     assert(mask.rows == corres.size());
 
+    int cnt1=0, cnt2=0;
+
     vector<pair<Vector3d, Vector3d>> ret;
     vector<Vector3d> tmp_cv;
     for(int i=0; i<corres.size(); i++){
 
-        if(mask.at<unsigned char>(i,0) == 0) continue;
+        if(mask.at<unsigned char>(i,0) == 0) {
+            cnt1++;
+            continue;
+        }
 
-        if(corres[i].first.z() <= 0.1 )
+        if(corres[i].first.z() <= 0.1 ) {
+            cnt2++;
             continue; // invalid depth pair
+        }
 
         ret.push_back(make_pair(corres[i].first, corres[i].second));
         tmp_cv.push_back(cov_v[i]);
     }
     cov_v = tmp_cv;
+    RCLCPP_INFO(rclcpp::get_logger("solve_5pts"), "depth cov cnt1:%d, cnt2:%d\n", cnt1, cnt2);
     return ret;
 }
 
@@ -291,7 +306,7 @@ bool MotionEstimator::solveRelativeHybrid(const vector<pair<Vector3d, Vector3d>>
         cv::Mat cameraMatrix = (cv::Mat_<double>(3, 3) << 1, 0, 0, 0, 1, 0, 0, 0, 1);
         cv::Mat rot, trans;
         int inlier_cnt = cv::recoverPose(E, ll, rr, cameraMatrix, rot, trans, mask);
-        cout << "solve_5pts.cpp: in solveRelativeHybrid(): inlier_cnt " << inlier_cnt << endl;
+        // cout << "solve_5pts.cpp: in solveRelativeHybrid(): inlier_cnt " << inlier_cnt << endl;
 
         Eigen::Matrix3d R;
         Eigen::Vector3d T;
@@ -311,6 +326,7 @@ bool MotionEstimator::solveRelativeHybrid(const vector<pair<Vector3d, Vector3d>>
             inliers = getInliersWithValidDepthCov(corres, mask, *pcov);
         }
 
+        RCLCPP_INFO(rclcpp::get_logger("solve_5pts"), "inlier_cnt:%d, inliers,size: %lu", inlier_cnt, inliers.size());
         if(inlier_cnt > 12 && inliers.size() >= 5){
 
             // optimization to solve R, T // R is Rji, T is tji

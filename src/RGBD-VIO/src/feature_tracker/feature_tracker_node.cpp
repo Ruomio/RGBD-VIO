@@ -1,6 +1,7 @@
 #include <pcl/conversions.h>
 #include <rclcpp/logger.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/image_encodings.hpp>
 #include <sensor_msgs/msg/image.hpp>
 // #include <sensor_msgs/sensor_msgs/msg/image_encodings.h>
 #include <sensor_msgs/msg/channel_float32.hpp>
@@ -74,6 +75,9 @@ void img_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg)
     else
         PUB_THIS_FRAME = false;
 
+    // check
+    // RCLCPP_INFO(rclcpp::get_logger("feature_tracker"), "encoding: %s, Image dimensions: %d x %d", img_msg->encoding.c_str(), img_msg->height, img_msg->width);
+
     cv_bridge::CvImageConstPtr ptr;
     cv::Mat ret_img;
     if (img_msg->encoding == "8UC1")
@@ -88,7 +92,7 @@ void img_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg)
         img.encoding = "mono8";
         ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::MONO8);
 	ret_img = ptr->image.clone();
-    }else if(img_msg->encoding == "8UC3"){
+    }else if(img_msg->encoding == "rgb8"){
 	sensor_msgs::msg::Image img;
 	img.header = img_msg->header;
 	img.height = img_msg->height;
@@ -96,13 +100,13 @@ void img_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg)
 	img.is_bigendian = img_msg->is_bigendian;
 	img.step = img_msg->step;
 	img.data = img_msg->data;
-	img.encoding = "bgr8";
-	ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::BGR8);
+	img.encoding = "rgb8";
+	ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::RGB8);
 	ret_img = ptr->image.clone();
-	cv::cvtColor(ret_img, ret_img, cv::COLOR_BGR2GRAY);
+	cv::cvtColor(ret_img, ret_img, cv::COLOR_RGB2GRAY);
     }else{
         ptr = cv_bridge::toCvCopy(img_msg, sensor_msgs::image_encodings::MONO8);
-	ret_img = ptr->image.clone();
+    	ret_img = ptr->image.clone();
     }
     cv::Mat show_img = ret_img; // ptr->image;
     TicToc t_r;
@@ -216,6 +220,7 @@ void img_callback(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg)
 
         if (SHOW_TRACK)
         {
+
             ptr = cv_bridge::cvtColor(ptr, sensor_msgs::image_encodings::BGR8);
             //cv::Mat stereo_img(ROW * NUM_OF_CAM, COL, CV_8UC3);
             cv::Mat stereo_img = ptr->image;

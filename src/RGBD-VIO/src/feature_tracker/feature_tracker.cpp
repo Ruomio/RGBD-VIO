@@ -197,7 +197,7 @@ void FeatureTracker::readImage(const cv::Mat &_img, double _cur_time)
         else
             n_pts.clear();
         // RCLCPP_INFO("forw_pts.size(): %d", forw_pts.size());
-        RCLCPP_DEBUG(rclcpp::get_logger("feature_tracker"), "detect feature costs: %fms max_cnt: %d detect %d new features", t_t.toc(), n_max_cnt, n_pts.size());
+        RCLCPP_DEBUG(rclcpp::get_logger("feature_tracker"), "detect feature costs: %fms max_cnt: %d detect %d new features", t_t.toc(), n_max_cnt, (int)n_pts.size());
 
         // RCLCPP_DEBUG("add feature begins");
         TicToc t_a;

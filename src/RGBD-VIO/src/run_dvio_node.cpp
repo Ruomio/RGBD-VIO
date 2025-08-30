@@ -8,6 +8,7 @@
 #include <rclcpp/logger.hpp>
 #include <rclcpp/logging.hpp>
 #include <rclcpp/time.hpp>
+#include <sensor_msgs/image_encodings.hpp>
 #include <stdio.h>
 #include <queue>
 #include <map>
@@ -262,7 +263,7 @@ void process()
                 double p_v = cloud[i].pv;
                 double velocity_x = cloud[i].vx;
                 double velocity_y = cloud[i].vy;
-                RCLCPP_ASSERT(rclcpp::get_logger(NODE_NAME), z == 1);
+                // RCLCPP_ASSERT(rclcpp::get_logger(NODE_NAME), z == 1);
                 // Eigen::Matrix<double, 7, 1> xyz_uv_velocity;
                 Eigen::Matrix<double, 10, 1> xyz_uv_velocity;
                 double lambda = 0;
@@ -294,7 +295,24 @@ void process()
                     rvio.associateDepthSimple(image, ptr->image);
                     if(rvio.solver_flag != INITIAL)
                         b_get_floor = rvio.getFloorAndObstacle(ptr->image);
-                }else{
+                }
+                else if(dpt_ptr->encoding == "32FC1") {
+                    sensor_msgs::msg::Image img;
+                    img.header = dpt_ptr->header;
+                    img.height = dpt_ptr->height;
+                    img.width = dpt_ptr->width;
+                    img.is_bigendian = dpt_ptr->is_bigendian;
+                    img.step = dpt_ptr->step;
+                    img.data = dpt_ptr->data;
+                    img.encoding = "32FC1";
+                    // ptr = cv_bridge::toCvCopy(img, sensor_msgs::msg::image_encodings::MONO16);
+                    cv_bridge::CvImageConstPtr ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::TYPE_32FC1);
+                    rvio.associateDepthSimple(image, ptr->image);
+                    if(rvio.solver_flag != INITIAL)
+                        b_get_floor = rvio.getFloorAndObstacle(ptr->image);
+
+                }
+                else{
                     cv_bridge::CvImageConstPtr ptr = cv_bridge::toCvCopy(dpt_ptr, sensor_msgs::image_encodings::MONO16);
                     rvio.associateDepthSimple(image, ptr->image);
                     if(rvio.solver_flag != INITIAL)
